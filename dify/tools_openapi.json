@@ -1,0 +1,292 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "新西方留学服务业务工具集",
+    "description": "新西方留学服务智能助手系统 FastAPI 业务接口的自定义工具集（仅供三个 Agent 使用）。导入后在工具授权处配置 API Key：请求头 X-API-Key，值为后端 TOOL_API_KEY（默认 xinxifang-tool-key-2026）。服务器地址按实际部署修改（Docker 内 Dify 使用 host.docker.internal）。",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://host.docker.internal:8010"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/api/student/leave": {
+      "post": {
+        "tags": ["学生侧"],
+        "summary": "提交请假申请（后端自动从请假事由解析起止时间）",
+        "operationId": "create_leave",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "student_id": {
+                    "type": "integer",
+                    "description": "学生ID"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "请假事由（支持「明天/后天/半天/三天」等时间表达）"
+                  },
+                  "service_type": {
+                    "type": "string",
+                    "description": "服务类型，默认请假",
+                    "default": "请假"
+                  },
+                  "start_time": {
+                    "type": "string",
+                    "description": "开始时间，可选（YYYY-MM-DD HH:MM:SS），不填由后端解析"
+                  },
+                  "end_time": {
+                    "type": "string",
+                    "description": "结束时间，可选（YYYY-MM-DD HH:MM:SS），不填由后端解析"
+                  }
+                },
+                "required": ["student_id"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "受理结果 JSON"
+          }
+        }
+      }
+    },
+    "/api/student/overview": {
+      "get": {
+        "tags": ["学生侧"],
+        "summary": "查询学生自助总览（请假/成绩/工单/心理画像）",
+        "operationId": "get_student_overview",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "学生ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "学生总览 JSON（leaves/scores/feedbacks/psych）"
+          }
+        }
+      }
+    },
+    "/api/student/feedback": {
+      "post": {
+        "tags": ["学生侧"],
+        "summary": "提交售后反馈/投诉工单",
+        "operationId": "create_feedback",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "student_id": {
+                    "type": "integer",
+                    "description": "学生ID"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "反馈内容摘要（50字内）"
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "反馈详细说明，可选"
+                  }
+                },
+                "required": ["student_id", "content"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "工单受理结果 JSON"
+          }
+        }
+      }
+    },
+    "/api/student/emotion": {
+      "post": {
+        "tags": ["学生侧"],
+        "summary": "情绪评估（含心理画像累积与高危预警落库）",
+        "operationId": "assess_emotion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "student_id": {
+                    "type": "integer",
+                    "description": "学生ID"
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "学生原话"
+                  },
+                  "emotion_tag": {
+                    "type": "string",
+                    "description": "上游LLM评估的情绪标签（高危/负面/平稳/积极），可选"
+                  },
+                  "emotion_score": {
+                    "type": "integer",
+                    "description": "上游LLM评估的情绪风险分0-100，可选"
+                  }
+                },
+                "required": ["student_id", "text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "情绪评估结果 JSON（emotion_tag/emotion_score/risk_level/alerted）"
+          }
+        }
+      }
+    },
+    "/api/employee/nl2sql": {
+      "post": {
+        "tags": ["员工侧"],
+        "summary": "员工业务指令执行（CRM/日报/成绩/请假审批/工单）",
+        "operationId": "run_nl2sql",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "员工业务指令（自包含的完整指令文本）"
+                  },
+                  "employee_id": {
+                    "type": "integer",
+                    "description": "当前员工ID，可选（写操作时用于归属）"
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "执行结果 JSON（intent/message/results）"
+          }
+        }
+      }
+    },
+    "/api/courses/recommend": {
+      "post": {
+        "tags": ["客服与活动"],
+        "summary": "留学项目智能推荐（画像研判+匹配评分）",
+        "operationId": "recommend_courses",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "raw_text": {
+                    "type": "string",
+                    "description": "客户原话（含年龄/学历/意向等画像信息）"
+                  },
+                  "llm_profile": {
+                    "type": "string",
+                    "description": "上游LLM抽取的画像JSON字符串（字段：name/age/education/intent/language/hands_on/budget），解析失败可省略"
+                  }
+                },
+                "required": ["raw_text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "推荐结果 JSON（best_match/matches/message）"
+          }
+        }
+      }
+    },
+    "/api/events": {
+      "get": {
+        "tags": ["客服与活动"],
+        "summary": "查询活动/讲座列表（含剩余名额）",
+        "operationId": "list_events",
+        "responses": {
+          "200": {
+            "description": "活动列表 JSON"
+          }
+        }
+      }
+    },
+    "/api/events/register": {
+      "post": {
+        "tags": ["客服与活动"],
+        "summary": "活动报名（名额校验+报名数累加+访客自动留资）",
+        "operationId": "register_event",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "event_name": {
+                    "type": "string",
+                    "description": "活动名称（或关键词，后端模糊匹配）"
+                  },
+                  "customer_name": {
+                    "type": "string",
+                    "description": "报名人姓名，可选"
+                  },
+                  "contact_info": {
+                    "type": "string",
+                    "description": "报名人联系方式，可选"
+                  }
+                },
+                "required": ["event_name"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "报名结果 JSON（registration_id 或错误说明）"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "新西方留学服务后端工具鉴权 Key（TOOL_API_KEY）"
+      }
+    }
+  }
+}

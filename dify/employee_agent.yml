@@ -1,0 +1,440 @@
+app:
+  description: 员工业务助手：CRM客户管理、日报、成绩录入查询、请假审批、投诉工单处理（NL2SQL确定性执行），新人指南与组织架构知识问答。面向顾问/班主任/管理员。
+  icon: "\U0001F4BC"
+  icon_background: '#E2F5F2'
+  mode: advanced-chat
+  name: 新西方留学服务-员工业务助手
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+    opening_statement: 你好，我是员工业务助手 🤖 支持口语化指令：查客户、录客户、更新状态、写/查日报、录/查成绩、审批请假、处理投诉。
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+    - 帮我查一下许同学的跟进记录
+    - 查一下待审批的请假
+    - 把许同学状态更新为已签约
+    - 写日报：今天跟进3位客户，邀约2场分享会
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+  graph:
+    edges:
+    - data: {isInIteration: false, sourceType: start, targetType: question-classifier}
+      id: e-start-clf
+      source: start
+      sourceHandle: source
+      target: classifier
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-c1
+      source: classifier
+      sourceHandle: '1'
+      target: llm_rewrite
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-c2
+      source: classifier
+      sourceHandle: '2'
+      target: llm_rewrite
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-c3
+      source: classifier
+      sourceHandle: '3'
+      target: llm_rewrite
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-c4
+      source: classifier
+      sourceHandle: '4'
+      target: llm_rewrite
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-c5
+      source: classifier
+      sourceHandle: '5'
+      target: llm_rewrite
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-c7
+      source: classifier
+      sourceHandle: '7'
+      target: llm_rewrite
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: code}
+      id: e-rewrite-code
+      source: llm_rewrite
+      sourceHandle: source
+      target: code_nl2sql
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: code, targetType: tool}
+      id: e-code-http
+      source: code_nl2sql
+      sourceHandle: source
+      target: tool_nl2sql
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: tool, targetType: llm}
+      id: e-http-llm
+      source: tool_nl2sql
+      sourceHandle: source
+      target: llm_business
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-llm-ans
+      source: llm_business
+      sourceHandle: source
+      target: answer_business
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: knowledge-retrieval}
+      id: e-clf-kn
+      source: classifier
+      sourceHandle: '6'
+      target: knowledge
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: knowledge-retrieval, targetType: llm}
+      id: e-kn-llm
+      source: knowledge
+      sourceHandle: source
+      target: llm_knowledge
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-kn-ans
+      source: llm_knowledge
+      sourceHandle: source
+      target: answer_knowledge
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        desc: 员工身份由后端对话代理注入
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - label: employee_id
+          max_length: 48
+          options: []
+          required: false
+          type: text-input
+          variable: employee_id
+        - label: employee_role
+          max_length: 48
+          options: []
+          required: false
+          type: text-input
+          variable: employee_role
+        - label: user_name
+          max_length: 48
+          options: []
+          required: false
+          type: text-input
+          variable: user_name
+      height: 142
+      id: start
+      position: {x: 60, y: 300}
+      positionAbsolute: {x: 60, y: 300}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        classes:
+        - id: '1'
+          name: 客户管理（查客户/跟进记录、录入客户、更新客户状态）
+        - id: '2'
+          name: 日报（写日报、口述日报、查日报、日报汇总）
+        - id: '3'
+          name: 成绩管理（录入成绩、查学生成绩）
+        - id: '4'
+          name: 请假审批与查询（同意/驳回请假、查请假记录）
+        - id: '5'
+          name: 投诉工单处理（查投诉、更新投诉状态、解决反馈）
+        - id: '6'
+          name: 新人指南与组织架构咨询（入职指引、规章制度、部门职能、联系方式）
+        - id: '7'
+          name: 其他业务指令
+        desc: 结合上下文判断员工意图
+        instruction: '你是新西方留学服务员工业务助手的意图分类器。当前员工角色：{{#start.employee_role#}}。请结合对话历史判断意图：1) 涉及客户、线索、跟进记录、签约/流失状态归为客户管理；2) 涉及日报归为日报；3) 涉及成绩/分数归为成绩管理；4) 涉及请假审批归为请假审批与查询；5) 涉及投诉/工单/反馈归为投诉工单处理；6) 询问公司制度、入职流程、部门架构、同事联系方式归为新人指南与组织架构咨询。注意「同意张三的请假」是业务指令而非知识咨询。只输出最匹配的一个类别。'
+        instructions: ''
+        model:
+          completion_params: {temperature: 0.1}
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        query_variable_selector: [sys, query]
+        selected: false
+        title: 意图分类
+        type: question-classifier
+        vision: {enabled: false}
+      height: 250
+      id: classifier
+      position: {x: 360, y: 300}
+      positionAbsolute: {x: 360, y: 300}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: 结合上下文补全指代，输出自包含指令
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0}
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是指令改写器。结合对话历史，把员工当前指令改写为自包含的完整指令：补全代词指代的人名/对象（如「把他状态改为已签约」→「把许同学的状态更新为已签约」），保留原意与关键参数。只输出改写后的指令文本，禁止解释、禁止markdown。若指令已完整或无法确定指代对象，则原样输出当前指令。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 上下文指令改写
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_rewrite
+      position: {x: 600, y: 100}
+      positionAbsolute: {x: 600, y: 100}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: |
+          import re
+
+          def main(query: str, employee_id: str) -> dict:
+              # 清洗上游LLM可能携带的思维链，只取正式输出
+              if "</think>" in query:
+                  query = query.split("</think>")[-1]
+              query = query.replace("<!--dify-deepseek-reasoning-->", "").strip()
+              employee_id_num = int(employee_id) if employee_id else None
+              return {"text": query, "employee_id": employee_id_num}
+        code_language: python3
+        desc: NL2SQL 统一入口（思维链清洗+员工ID归一化）
+        outputs:
+          text: {children: null, type: string}
+          employee_id: {children: null, type: number}
+        selected: false
+        title: 构造指令请求
+        type: code
+        variables:
+        - value_selector: [llm_rewrite, text]
+          variable: query
+        - value_selector: [start, employee_id]
+          variable: employee_id
+      height: 54
+      id: code_nl2sql
+      position: {x: 680, y: 200}
+      positionAbsolute: {x: 680, y: 200}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: 自定义工具：后端确定性意图解析+参数化SQL执行
+        is_team_authorization: true
+        output_schema: null
+        paramSchemas:
+        - auto_generate: false
+          form: form
+          human_description: 员工业务指令
+          label: text
+          llm_description: 员工业务指令
+          max_length: 1024
+          name: text
+          options: []
+          required: true
+          type: string
+        - auto_generate: false
+          form: form
+          human_description: 员工ID
+          label: employee_id
+          llm_description: 员工ID
+          max_length: 48
+          name: employee_id
+          options: []
+          required: false
+          type: number
+        provider_id: __API_TOOL_PROVIDER_UUID__
+        provider_name: __API_TOOL_PROVIDER_UUID__
+        provider_type: api
+        selected: false
+        title: NL2SQL指令执行
+        tool_configurations: {}
+        tool_node_version: "2"
+        tool_parameters:
+          employee_id:
+            type: variable
+            value: [code_nl2sql, employee_id]
+          text:
+            type: variable
+            value: [code_nl2sql, text]
+        tool_label: run_nl2sql
+        tool_name: run_nl2sql
+        type: tool
+        variables: []
+      height: 116
+      id: tool_nl2sql
+      position: {x: 980, y: 200}
+      positionAbsolute: {x: 980, y: 200}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.3}
+          mode: chat
+          name: deepseek-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务员工业务助手。用户消息中会给出【后端执行结果JSON】和【员工指令】。你必须严格基于JSON汇报：1) 用message字段说明执行结果；2) results有数据时用Markdown表格呈现关键字段（客户档案含跟进历史要完整呈现）；3) 写操作成功时明确回执；4) JSON提示未识别/信息不足/失败时如实转达并请员工补充，绝不宣称操作成功；5) 不展示SQL语句；6) 简洁专业中文。'
+        - role: user
+          text: "【后端执行结果JSON】\n{{#tool_nl2sql.text#}}\n\n【员工指令】\n{{#sys.query#}}\n\n请基于上述JSON汇报执行结果。"
+        selected: false
+        title: 业务结果话术
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_business
+      position: {x: 1280, y: 200}
+      positionAbsolute: {x: 1280, y: 200}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_business.text#}}'
+        desc: ''
+        selected: false
+        title: 回复业务结果
+        type: answer
+        variables: []
+      height: 105
+      id: answer_business
+      position: {x: 1580, y: 200}
+      positionAbsolute: {x: 1580, y: 200}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids: []
+        desc: 导入后绑定知识库：新人指南/公司信息
+        multiple_retrieval_config:
+          reranking_enable: false
+          reranking_mode: reranking_model
+          score_threshold: null
+          score_threshold_enabled: false
+          top_k: 5
+        query_variable_selector: [sys, query]
+        retrieval_mode: multiple
+        selected: false
+        title: 知识库检索
+        type: knowledge-retrieval
+      height: 92
+      id: knowledge
+      position: {x: 680, y: 480}
+      positionAbsolute: {x: 680, y: 480}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: true, variable_selector: [knowledge, result]}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.3}
+          mode: chat
+          name: deepseek-v4-pro
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务员工业务助手，负责新人入职指引与组织架构答疑。请严格基于知识库检索内容回答：
+
+            {{#context#}}
+
+            规则：1) 制度、流程、联系方式必须来自知识库，不得编造；2) 未收录的内容，禁止使用「资料中未明确」「资料中暂未单独收录」「暂未收录」等表述，一律回复「（可进一步联系我们工作人员确认）」；3) 中文回答，条理清晰；4) 结合对话历史延续话题。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 新人指南话术
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_knowledge
+      position: {x: 980, y: 480}
+      positionAbsolute: {x: 980, y: 480}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_knowledge.text#}}'
+        desc: ''
+        selected: false
+        title: 回复指南问答
+        type: answer
+        variables: []
+      height: 105
+      id: answer_knowledge
+      position: {x: 1280, y: 480}
+      positionAbsolute: {x: 1280, y: 480}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+  hash: ''

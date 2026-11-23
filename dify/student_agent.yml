@@ -1,0 +1,831 @@
+app:
+  description: 留学生智能管家：请假申请、记录查询、售后反馈、心理关怀与高危预警、升学咨询。意图分类后调用 FastAPI 后端工具，心理评估与预警由后端规则引擎落库。
+  icon: "\U0001F393"
+  icon_background: '#E8EFFC'
+  mode: advanced-chat
+  name: 新西方留学服务-留学生智能管家
+kind: app
+version: 0.5.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      enabled: false
+    opening_statement: 你好，我是你的留学智能管家 🏠 可以帮你请假、查成绩、提交反馈，也可以陪你聊聊心情、解答升学问题。
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions:
+    - 我明天要请假一天，家里有事
+    - 查一下我的成绩
+    - 我最近压力有点大
+    - 我想了解专升本项目
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+  graph:
+    edges:
+    - data: {isInIteration: false, sourceType: start, targetType: question-classifier}
+      id: e-start-clf
+      source: start
+      sourceHandle: source
+      target: classifier
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: tool}
+      id: e-clf-leave
+      source: classifier
+      sourceHandle: '1'
+      target: tool_leave
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: tool, targetType: llm}
+      id: e-leave-llm
+      source: tool_leave
+      sourceHandle: source
+      target: llm_leave
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-leave-ans
+      source: llm_leave
+      sourceHandle: source
+      target: answer_leave
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: tool}
+      id: e-clf-overview
+      source: classifier
+      sourceHandle: '2'
+      target: tool_overview
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: tool, targetType: llm}
+      id: e-overview-llm
+      source: tool_overview
+      sourceHandle: source
+      target: llm_overview
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-overview-ans
+      source: llm_overview
+      sourceHandle: source
+      target: answer_overview
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: code}
+      id: e-clf-feedback
+      source: classifier
+      sourceHandle: '3'
+      target: code_feedback
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: code, targetType: tool}
+      id: e-feedback-http
+      source: code_feedback
+      sourceHandle: source
+      target: tool_feedback
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: tool, targetType: llm}
+      id: e-feedback-llm
+      source: tool_feedback
+      sourceHandle: source
+      target: llm_feedback
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-feedback-ans
+      source: llm_feedback
+      sourceHandle: source
+      target: answer_feedback
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: llm}
+      id: e-clf-emotion
+      source: classifier
+      sourceHandle: '4'
+      target: llm_risk
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: code}
+      id: e-risk-code
+      source: llm_risk
+      sourceHandle: source
+      target: code_emotion
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: code, targetType: tool}
+      id: e-emotion-http
+      source: code_emotion
+      sourceHandle: source
+      target: tool_emotion
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: tool, targetType: llm}
+      id: e-emotion-llm
+      source: tool_emotion
+      sourceHandle: source
+      target: llm_emotion
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-emotion-ans
+      source: llm_emotion
+      sourceHandle: source
+      target: answer_emotion
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: knowledge-retrieval}
+      id: e-clf-kn
+      source: classifier
+      sourceHandle: '5'
+      target: knowledge
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: question-classifier, targetType: knowledge-retrieval}
+      id: e-clf-kn2
+      source: classifier
+      sourceHandle: '6'
+      target: knowledge
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: knowledge-retrieval, targetType: llm}
+      id: e-kn-llm
+      source: knowledge
+      sourceHandle: source
+      target: llm_knowledge
+      targetHandle: target
+      type: custom
+    - data: {isInIteration: false, sourceType: llm, targetType: answer}
+      id: e-kn-ans
+      source: llm_knowledge
+      sourceHandle: source
+      target: answer_knowledge
+      targetHandle: target
+      type: custom
+    nodes:
+    - data:
+        desc: 学生身份由后端对话代理注入
+        selected: false
+        title: 开始
+        type: start
+        variables:
+        - label: student_id
+          max_length: 48
+          options: []
+          required: false
+          type: text-input
+          variable: student_id
+        - label: user_name
+          max_length: 48
+          options: []
+          required: false
+          type: text-input
+          variable: user_name
+      height: 116
+      id: start
+      position: {x: 60, y: 300}
+      positionAbsolute: {x: 60, y: 300}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        classes:
+        - id: '1'
+          name: 请假申请（想请假、明天/后天有事、请假半天等）
+        - id: '2'
+          name: 记录查询（查请假记录、查成绩、查反馈工单进度）
+        - id: '3'
+          name: 售后反馈与投诉（报修、投诉、建议、对服务不满）
+        - id: '4'
+          name: 情绪倾诉与心理关怀（压力、焦虑、孤独、想家、开心、日常聊天倾诉，以及任何涉及轻生/自残/生命安全的表达，含隐晦说法）
+        - id: '5'
+          name: 升学咨询与知识问答（留学项目、学费、政策、签证、公司信息咨询）
+        - id: '6'
+          name: 其他
+        desc: 结合上下文判断学生意图
+        instruction: '你是新西方留学服务学生管家的意图分类器。请结合对话历史上下文判断学生当前输入的意图。注意：1)「我明天想请假」属于请假申请；2)「我的请假批了吗」「查成绩」属于记录查询；3) 表达情绪、倾诉压力、闲聊心情属于情绪倾诉，即使内容涉及学习压力也优先归为情绪倾诉；4) 询问留学项目、费用、政策属于升学咨询；5) 安全优先：任何涉及轻生、自残、生命安全的表达——包括隐晦/隐喻说法（如「从20楼飞到1楼」「想喝硫酸」「开煤气关窗睡觉」「吞整瓶安眠药」「一了百了」）——无论表面像什么意图，一律归为情绪倾诉与心理关怀。只输出最匹配的一个类别。'
+        instructions: ''
+        model:
+          completion_params: {temperature: 0.1}
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        query_variable_selector: [sys, query]
+        selected: false
+        title: 意图分类
+        type: question-classifier
+        vision: {enabled: false}
+      height: 220
+      id: classifier
+      position: {x: 360, y: 300}
+      positionAbsolute: {x: 360, y: 300}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: 自定义工具：提交请假申请（后端自动解析请假时间并写入待审批记录）
+        is_team_authorization: true
+        output_schema: null
+        paramSchemas:
+        - auto_generate: false
+          form: form
+          human_description: 学生ID
+          label: student_id
+          llm_description: 学生ID
+          max_length: 48
+          name: student_id
+          options: []
+          required: true
+          type: number
+        - auto_generate: false
+          form: form
+          human_description: 请假事由
+          label: reason
+          llm_description: 请假事由
+          max_length: 512
+          name: reason
+          options: []
+          required: false
+          type: string
+        provider_id: 新西方留学服务业务工具集
+        provider_name: 新西方留学服务业务工具集
+        provider_type: api
+        selected: false
+        title: 提交请假申请
+        tool_configurations: {}
+        tool_node_version: "2"
+        tool_parameters:
+          reason:
+            type: variable
+            value: [sys, query]
+          student_id:
+            type: variable
+            value: [start, student_id]
+        tool_label: create_leave
+        tool_name: create_leave
+        type: tool
+        variables: []
+      height: 116
+      id: tool_leave
+      position: {x: 680, y: 60}
+      positionAbsolute: {x: 680, y: 60}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.4}
+          mode: chat
+          name: deepseek-v4-pro
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务留学生智能管家。后端已受理请假申请，返回JSON如下：{{#tool_leave.text#}}。请用亲切简洁的中文向学生确认：请假起止时间、状态（待审批）、审批人（班主任）。不要编造JSON之外的信息。若 time_parsed 为 false，提醒学生时间按默认解析，可补充明确时间。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 请假话术组织
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_leave
+      position: {x: 1280, y: 60}
+      positionAbsolute: {x: 1280, y: 60}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_leave.text#}}'
+        desc: ''
+        selected: false
+        title: 回复请假结果
+        type: answer
+        variables: []
+      height: 105
+      id: answer_leave
+      position: {x: 1580, y: 60}
+      positionAbsolute: {x: 1580, y: 60}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: 自定义工具：一次取回请假/成绩/工单/心理画像
+        is_team_authorization: true
+        output_schema: null
+        paramSchemas:
+        - auto_generate: false
+          form: form
+          human_description: 学生ID
+          label: student_id
+          llm_description: 学生ID
+          max_length: 48
+          name: student_id
+          options: []
+          required: true
+          type: number
+        provider_id: 新西方留学服务业务工具集
+        provider_name: 新西方留学服务业务工具集
+        provider_type: api
+        selected: false
+        title: 查询学生总览
+        tool_configurations: {}
+        tool_node_version: "2"
+        tool_parameters:
+          student_id:
+            type: variable
+            value: [start, student_id]
+        tool_label: get_student_overview
+        tool_name: get_student_overview
+        type: tool
+        variables: []
+      height: 116
+      id: tool_overview
+      position: {x: 680, y: 220}
+      positionAbsolute: {x: 680, y: 220}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.3}
+          mode: chat
+          name: deepseek-v4-pro
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务留学生智能管家。后端返回该学生的记录JSON：{{#tool_overview.text#}}。请根据学生的问题，从 leaves（请假）、scores（成绩）、feedbacks（工单）中挑选相关数据，用中文与Markdown表格清晰呈现。只呈现JSON中存在的数据，不编造；无数据时明确说明。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 记录查询话术
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_overview
+      position: {x: 980, y: 220}
+      positionAbsolute: {x: 980, y: 220}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_overview.text#}}'
+        desc: ''
+        selected: false
+        title: 回复查询结果
+        type: answer
+        variables: []
+      height: 105
+      id: answer_overview
+      position: {x: 1280, y: 220}
+      positionAbsolute: {x: 1280, y: 220}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: |
+          def main(query: str) -> dict:
+              content = query[:50]
+              detail = query
+              return {"content": content, "detail": detail}
+        code_language: python3
+        desc: 摘要（50字）+详情
+        outputs:
+          content: {children: null, type: string}
+          detail: {children: null, type: string}
+        selected: false
+        title: 构造反馈请求
+        type: code
+        variables:
+        - value_selector: [sys, query]
+          variable: query
+      height: 54
+      id: code_feedback
+      position: {x: 680, y: 380}
+      positionAbsolute: {x: 680, y: 380}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: 自定义工具：生成待处理工单
+        is_team_authorization: true
+        output_schema: null
+        paramSchemas:
+        - auto_generate: false
+          form: form
+          human_description: 学生ID
+          label: student_id
+          llm_description: 学生ID
+          max_length: 48
+          name: student_id
+          options: []
+          required: true
+          type: number
+        - auto_generate: false
+          form: form
+          human_description: 反馈内容摘要
+          label: content
+          llm_description: 反馈内容摘要
+          max_length: 128
+          name: content
+          options: []
+          required: true
+          type: string
+        - auto_generate: false
+          form: form
+          human_description: 反馈详细说明
+          label: detail
+          llm_description: 反馈详细说明
+          max_length: 1024
+          name: detail
+          options: []
+          required: false
+          type: string
+        provider_id: 新西方留学服务业务工具集
+        provider_name: 新西方留学服务业务工具集
+        provider_type: api
+        selected: false
+        title: 提交售后反馈
+        tool_configurations: {}
+        tool_node_version: "2"
+        tool_parameters:
+          content:
+            type: variable
+            value: [code_feedback, content]
+          detail:
+            type: variable
+            value: [code_feedback, detail]
+          student_id:
+            type: variable
+            value: [start, student_id]
+        tool_label: create_feedback
+        tool_name: create_feedback
+        type: tool
+        variables: []
+      height: 116
+      id: tool_feedback
+      position: {x: 980, y: 380}
+      positionAbsolute: {x: 980, y: 380}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.4}
+          mode: chat
+          name: deepseek-v4-pro
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务留学生智能管家。后端已生成反馈工单，JSON：{{#tool_feedback.text#}}。请用中文向学生确认工单编号、内容摘要、状态（待处理），并说明老师解决后会自动通知。语气友好负责，不编造处理时限。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 反馈话术组织
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_feedback
+      position: {x: 1280, y: 380}
+      positionAbsolute: {x: 1280, y: 380}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_feedback.text#}}'
+        desc: ''
+        selected: false
+        title: 回复反馈结果
+        type: answer
+        variables: []
+      height: 105
+      id: answer_feedback
+      position: {x: 1580, y: 380}
+      positionAbsolute: {x: 1580, y: 380}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: 大模型兜底：识别隐晦/隐喻式轻生表达（跳楼隐喻/服毒/煤气/过量服药等）
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 6}
+        model:
+          completion_params: {temperature: 0}
+          mode: chat
+          name: deepseek-v4-flash
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是学生心理安全风险评估器。结合对话历史评估学生当前消息的情绪与自伤风险，仅输出一个JSON对象（禁止markdown与解释）：{"emotion_tag":"高危/负面/平稳/积极","emotion_score":0到100整数}。评分标准：1) 任何明确或隐晦的轻生/自残意图一律 emotion_score>=85、emotion_tag=高危。隐晦表达包括但不限于：跳楼隐喻（「从20楼飞到1楼」「想飞下去」「到楼顶看看」）、服毒（「想喝硫酸」「喝农药」「百草枯」）、气体中毒（「开煤气关窗睡觉」「烧炭睡觉」「在车里开空调睡死」）、过量服药（「吞整瓶安眠药」「吃很多药睡过去」）、其他（「跳桥」「卧轨」「走向车流」「割手腕」「一了百了」「彻底解脱」「永远睡过去」「再也不想醒来」）；2) 强烈负面情绪但无自伤意图（焦虑/崩溃/想家/孤独/压力大）40-69，emotion_tag=负面；3) 一般情绪波动20-39、平稳；4) 积极开心<20、积极。宁可谨慎偏高，不可漏判自伤风险；普通留学咨询、请假、查成绩等无情绪内容给20平稳。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: LLM心理风险评估
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_risk
+      position: {x: 680, y: 620}
+      positionAbsolute: {x: 680, y: 620}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: |
+          import json
+          import re
+
+          def main(llm_text: str) -> dict:
+              # 解析LLM风险评估JSON（清洗思维链与代码块），失败时后端正则兜底
+              emotion_tag = None
+              emotion_score = None
+              try:
+                  t = (llm_text or "")
+                  if "</think>" in t:
+                      t = t.split("</think>")[-1]
+                  t = re.sub(r"^```(?:json)?|```$", "", t.strip(), flags=re.M).strip()
+                  parsed = json.loads(t)
+                  if isinstance(parsed, dict) and parsed.get("emotion_score") is not None:
+                      emotion_tag = parsed.get("emotion_tag")
+                      emotion_score = int(parsed["emotion_score"])
+              except Exception:
+                  pass
+              return {"emotion_tag": emotion_tag, "emotion_score": emotion_score}
+        code_language: python3
+        desc: 解析LLM评估结果（后端显式/隐晦规则仍强制兜底）
+        outputs:
+          emotion_tag: {children: null, type: string}
+          emotion_score: {children: null, type: number}
+        selected: false
+        title: 解析情绪评估
+        type: code
+        variables:
+        - value_selector: [llm_risk, text]
+          variable: llm_text
+      height: 54
+      id: code_emotion
+      position: {x: 980, y: 620}
+      positionAbsolute: {x: 980, y: 620}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: 自定义工具：情绪评估+画像累积+高危预警落库
+        is_team_authorization: true
+        output_schema: null
+        paramSchemas:
+        - auto_generate: false
+          form: form
+          human_description: 学生ID
+          label: student_id
+          llm_description: 学生ID
+          max_length: 48
+          name: student_id
+          options: []
+          required: true
+          type: number
+        - auto_generate: false
+          form: form
+          human_description: 学生原话
+          label: text
+          llm_description: 学生原话
+          max_length: 1024
+          name: text
+          options: []
+          required: true
+          type: string
+        - auto_generate: false
+          form: form
+          human_description: 情绪标签
+          label: emotion_tag
+          llm_description: 情绪标签
+          max_length: 48
+          name: emotion_tag
+          options: []
+          required: false
+          type: string
+        - auto_generate: false
+          form: form
+          human_description: 情绪风险分
+          label: emotion_score
+          llm_description: 情绪风险分
+          max_length: 48
+          name: emotion_score
+          options: []
+          required: false
+          type: number
+        provider_id: 新西方留学服务业务工具集
+        provider_name: 新西方留学服务业务工具集
+        provider_type: api
+        selected: false
+        title: 情绪评估与预警
+        tool_configurations: {}
+        tool_node_version: "2"
+        tool_parameters:
+          emotion_score:
+            type: variable
+            value: [code_emotion, emotion_score]
+          emotion_tag:
+            type: variable
+            value: [code_emotion, emotion_tag]
+          student_id:
+            type: variable
+            value: [start, student_id]
+          text:
+            type: variable
+            value: [sys, query]
+        tool_label: assess_emotion
+        tool_name: assess_emotion
+        type: tool
+        variables: []
+      height: 116
+      id: tool_emotion
+      position: {x: 1280, y: 620}
+      positionAbsolute: {x: 1280, y: 620}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: false, variable_selector: []}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.6}
+          mode: chat
+          name: deepseek-v4-pro
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务留学生智能管家，温暖、共情、不评判。后端情绪评估结果JSON：{{#tool_emotion.text#}}。要求：1) 先共情回应学生的情绪，给予支持性陪伴话语；2) 若 alerted 为 true，必须明确告知「已通知班主任关注你」，并温和建议寻求专业帮助（心理援助热线12356），不说教、不渲染恐慌；3) 若 risk_level 为中，表达关心并鼓励继续倾诉；4) 你不是心理医生，不做诊断；5) 结合对话历史延续关怀话题。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 心理关怀话术
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_emotion
+      position: {x: 1580, y: 620}
+      positionAbsolute: {x: 1580, y: 620}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_emotion.text#}}'
+        desc: ''
+        selected: false
+        title: 回复关怀
+        type: answer
+        variables: []
+      height: 105
+      id: answer_emotion
+      position: {x: 1880, y: 620}
+      positionAbsolute: {x: 1880, y: 620}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        dataset_ids: []
+        desc: 导入后绑定知识库：公司信息/留学政策/业务项目/FAQ
+        multiple_retrieval_config:
+          reranking_enable: false
+          reranking_mode: reranking_model
+          score_threshold: null
+          score_threshold_enabled: false
+          top_k: 5
+        query_variable_selector: [sys, query]
+        retrieval_mode: multiple
+        selected: false
+        title: 知识库检索
+        type: knowledge-retrieval
+      height: 92
+      id: knowledge
+      position: {x: 680, y: 700}
+      positionAbsolute: {x: 680, y: 700}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context: {enabled: true, variable_selector: [knowledge, result]}
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix: {assistant: '', user: ''}
+          window: {enabled: true, size: 10}
+        model:
+          completion_params: {temperature: 0.3}
+          mode: chat
+          name: deepseek-v4-pro
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - role: system
+          text: '你是新西方留学服务留学生智能管家。请严格基于以下知识库检索内容回答学生的升学/政策/费用/公司信息咨询：
+
+            {{#context#}}
+
+            规则：1) 费用、政策、报名等关键信息必须来自知识库，不得编造；2) 知识库没有的内容，禁止使用「资料中未明确」「资料中暂未单独收录」「暂未收录」等表述，一律回复「（可进一步联系我们工作人员确认）」；3) 用中文、条理清晰，可用Markdown表格；4) 结合对话历史理解指代（如「那德国呢」）；5) 涉及升学意向时可自然引导至项目推荐。'
+        - role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 知识问答话术
+        type: llm
+        variables: []
+        vision: {enabled: false}
+      height: 98
+      id: llm_knowledge
+      position: {x: 980, y: 700}
+      positionAbsolute: {x: 980, y: 700}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm_knowledge.text#}}'
+        desc: ''
+        selected: false
+        title: 回复知识问答
+        type: answer
+        variables: []
+      height: 105
+      id: answer_knowledge
+      position: {x: 1280, y: 700}
+      positionAbsolute: {x: 1280, y: 700}
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+  hash: ''

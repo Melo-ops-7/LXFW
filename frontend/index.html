@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新西方留学服务 - 值得信赖的国际教育服务品牌</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="inner">
+    <div class="logo"><span class="logo-badge">粤</span>新西方留学服务</div>
+    <nav>
+      <a href="#projects">留学项目</a>
+      <a href="#recommend">智能推荐</a>
+      <a href="#events">活动讲座</a>
+      <a href="#faq">常见问题</a>
+      <a href="#about">关于我们</a>
+    </nav>
+    <a class="btn btn-outline btn-sm" href="student.html">学生入口</a>
+    <a class="btn btn-primary btn-sm" href="staff.html">员工 / 后台</a>
+  </div>
+</header>
+
+<section class="hero">
+  <img class="hero-bg" src="img/hero.jpg" alt="清晨的新加坡滨海湾，留学生眺望远方">
+  <div class="inner">
+    <div class="overline">SINCE 1981 · 值得信赖的国际教育服务品牌</div>
+    <h1>从岭南出发，<br>向世界<em>求学</em>。</h1>
+    <p>新西方留学服务 · 智能教育服务助手。国际教育 · 学历提升 · 双元制培养 · 国际研学，
+       AI 智能顾问为您提供留学项目推荐、政策咨询与活动报名一站式服务。</p>
+    <div>
+      <button class="btn btn-light" onclick="openChat()">💬 智能客服咨询</button>
+      <a class="btn btn-ghost" href="#recommend">🎯 测算适合我的项目</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="num">1981</div><div class="lbl">创办年份</div></div>
+      <div><div class="num">98%+</div><div class="lbl">签证通过率</div></div>
+      <div><div class="num">数百所</div><div class="lbl">全球合作院校</div></div>
+      <div><div class="num">5 大</div><div class="lbl">事业部</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section" id="projects">
+  <div class="overline">PROGRAMS · 留学项目</div>
+  <h2>两条主线，通往世界</h2>
+  <p class="sub">新加坡定向培养 · 德国双元制 · 一年制专升本 / 本升硕，学历回国受中国教育部认证</p>
+  <div class="filter-bar" id="proj-filter"></div>
+  <div class="grid proj-grid" id="proj-grid"></div>
+</section>
+
+<section class="site-section" id="recommend">
+  <div class="overline">AI MATCHING · 智能推荐</div>
+  <h2>让画像研判，替你选路</h2>
+  <p class="sub">填写基本情况，AI 画像研判引擎为您匹配留学项目，输出推荐理由与匹配度</p>
+  <div class="recommend-grid">
+    <div class="card card-pad">
+      <div class="form-grid">
+        <div class="form-row"><label>年龄</label><input id="rc-age" type="number" placeholder="如 19"></div>
+        <div class="form-row"><label>当前学历</label>
+          <select id="rc-edu"><option value="">请选择</option><option>初中</option><option>高中</option><option>中职技校</option><option>专科</option><option>本科</option><option>硕士</option></select></div>
+        <div class="form-row"><label>意向</label>
+          <select id="rc-intent"><option value="">请选择</option><option>升学</option><option>就业</option><option>移民</option></select></div>
+        <div class="form-row"><label>语言 / 特长（可选）</label><input id="rc-extra" placeholder="如：有德语B1基础，动手能力强"></div>
+        <div class="form-row full"><label>补充描述（可选）</label><input id="rc-text" placeholder="如：想快点拿本科学历，预算中等"></div>
+      </div>
+      <button class="btn btn-primary" id="rc-btn">开始智能匹配</button>
+      <div id="rc-result" style="margin-top:18px"></div>
+    </div>
+    <div class="recommend-side">
+      <img src="img/campus.jpg" alt="明亮的大学图书馆里，留学生围坐讨论">
+      <div class="quote">「教育不是灌满一桶水，而是点燃一把火。」<small>—— 新西方留学服务 · 向上向善，实干笃行</small></div>
+    </div>
+  </div>
+</section>
+
+<section class="site-section" id="events">
+  <div class="overline">EVENTS · 活动讲座</div>
+  <h2>与招生官面对面</h2>
+  <p class="sub">留学分享会 · 招生官见面会 · 项目说明会，在线报名</p>
+  <div class="card" id="event-list"></div>
+</section>
+
+<section class="site-section" id="faq">
+  <div class="overline">FAQ · 常见问题</div>
+  <h2>你关心的，都在这里</h2>
+  <p class="sub">更多问题可咨询右下角智能客服</p>
+  <div class="card card-pad" id="faq-list"></div>
+</section>
+
+<section class="site-section" id="about">
+  <div class="overline">ABOUT · 关于我们</div>
+  <h2>四十五年，一件事</h2>
+  <p class="sub">新西方留学教育服务有限公司（简称“新西方留学服务”）</p>
+  <div class="grid about-grid">
+    <div class="card card-pad">
+      <img class="about-img" src="img/singapore.jpg" alt="新加坡滨海湾花园">
+      <p>新西方留学服务创办于 1981 年，始终坚守服务广东教育的初心，通过整合各方优质教育资源搭建专业、可靠的文化教育综合服务平台，
+      全力打造值得信赖的国际教育服务品牌。2024 年 3 月启动新西方国际服务体系升级。</p>
+      <p style="margin-top:10px"><b>使命：</b>致力让生活更美好　<b>价值观：</b>向上向善，实干笃行</p>
+      <p style="margin-top:10px"><b>主营业务：</b>国际教育、智慧教育、素质教育和实体教育。国际教育涵盖双元制教育、学历提升项目、国际留学项目和国际研学项目。</p>
+      <p style="margin-top:10px"><b>部门架构：</b>双元制事业部、智能装备事业部、课后服务事业部、研学服务事业部、科技赛事事业部。</p>
+    </div>
+    <div class="card card-pad">
+      <div class="section-title">预约顾问回电</div>
+      <div class="form-row"><label>姓名</label><input id="lead-name" placeholder="您的称呼"></div>
+      <div class="form-row"><label>联系方式</label><input id="lead-phone" placeholder="手机号"></div>
+      <div class="form-row"><label>意向说明</label><textarea id="lead-note" rows="2" placeholder="如：孩子高中毕业，想了解新加坡本科班"></textarea></div>
+      <button class="btn btn-primary" id="lead-btn" style="width:100%">提交留资</button>
+      <p class="muted" style="margin-top:12px">地址：广州市越秀区五山路 200 号新西方教育大厦三楼<br>电话：020-8888 6666　邮箱：postmaster@xinxifang-edu.com</p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="inner">
+    <div>© 1981-2026 新西方留学教育服务有限公司 · 新西方留学服务<br>公众号：xinxifangedu　网址：www.xinxifang-edu.cn</div>
+    <div>新西方留学服务智能教育服务助手系统 · 演示环境<br>AI 建议仅供参考，最终决策以人工顾问为准</div>
+  </div>
+</footer>
+
+<button class="chat-fab" id="chat-fab" onclick="openChat()" title="智能客服">💬</button>
+<div class="chat-panel hidden" id="chat-panel"></div>
+
+<script src="js/common.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>
